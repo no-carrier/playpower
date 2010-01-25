@@ -524,7 +524,7 @@ CheckLeft:
 	AND buttons
 	BEQ CheckRight
 
-	;flipping hanuman on left press..
+	;flipping hanuman on left press......
         lda #$66
         sta $501
         lda #$67
