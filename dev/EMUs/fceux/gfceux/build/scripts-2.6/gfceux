@@ -1,0 +1,15 @@
+#!/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python
+#
+# GTK2 GUI for FCE UltraX
+#
+# Lukas Sabota <ltsmooth42 _at_ gmail _dot_ com>
+#
+# <http://fceux.com>
+try:
+	from src import main
+except:
+	from gfceux import main
+
+app = main.GfceuxApp()
+
+
