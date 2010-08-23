@@ -1,2 +1,0 @@
-void DoTasEdit();
-void UpdateTasEdit();
