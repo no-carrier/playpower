@@ -52,7 +52,7 @@ snow_monster_fall:
           sta trig_smoke
           
        lda wn          ;;;;;;no of letters for continuing snow level
-       cmp #1
+       cmp #4
        bne @gg1
 
        lda #1
@@ -67,6 +67,7 @@ snow_monster_fall:
        sta level_change            ;;;; increse the level for NMI
        lda #0
        sta trig_fall
+       sta wl
        sta trig_smoke
        sta lower_byte               ;;;; starting the address of underline from starting
        sta varYp
@@ -207,7 +208,7 @@ lda level_change                    ;;;;initialising variables after scroling fo
 cmp #0
 bne @p1
         lda wn                      ;;;;;; for how many different letters rock will loaded again
-        cmp #1
+        cmp #3
         bne @conti
         lda #1                             ;;;;; code for going from rock level to soldier level
         sta trig_sol
@@ -1670,7 +1671,7 @@ sta Current
  ;;;;;;;;
          lda #0
          sta ps2
-         jsr arrow11
+         ;jsr arrow11
          lda #0
          sta Current
    lda #1
@@ -1844,7 +1845,7 @@ clear_monster:
        sta trig_smoke
        ;jsr clear_monster
        lda wn
-       cmp #0
+       cmp #3
        bne @gg1
 
        lda #1
@@ -1988,7 +1989,7 @@ lv1:
     sta trig_sol
 
     lda wn                      ;;;; how many different letters will be loaded for soldiers
-    cmp #0
+    cmp #3
     bne @p4
 
     lda #1
@@ -3834,7 +3835,7 @@ sta Current
 @Found:
          lda #0
          sta ps2
-         jsr arrow11
+         ;jsr arrow11
          lda #0
          sta Current
          lda #1
@@ -3944,7 +3945,7 @@ sta Current
 @Found:
          lda #0
          sta ps2
-         jsr arrow11
+         ;jsr arrow11
          lda #0
          sta Current
          lda #1
@@ -4057,7 +4058,7 @@ sta Current
  ;;;;;;;;
          lda #0
          sta ps2
-         jsr arrow11
+         ;jsr arrow11
          lda #0
          sta Current
    lda #1
@@ -4367,7 +4368,7 @@ jsr ClearSprites111
      LDA sprites_rock,x            ; load data from address (sprites + x)
      STA $0540,x              ; store into RAM address ($0200 + x)
      INX                       ; X = X + 1
-     CPX #92
+     CPX #84
                         ; Compare X to # of values (divide by 4 for total # of sprites)
      BNE @LoadSpritesLoop111       ; Branch to LoadSpritesLoop if compare was Not Equal to zero
 
@@ -5513,7 +5514,7 @@ keyboard:
 
 ;Library:
 word1:
-.db 'A','R','I','N','C','E'
+.db 'D','E','F','E','A','T'
 .db 'F','R','I','E','N','D'
 .db 'W','A','R'
 .db 'L','A','R','G','E'
@@ -5521,7 +5522,7 @@ word1:
 .db 'N','I','G','H','T'
 .db 'M','O','R','N','I','N','G'
 .db 'T','R','U','T','H'
-.db 'D','E','F','E','A','T'
+.db 'P','R','I','N','C','E'
 .db 'M','O','N','S','O','O','N'
 
 
@@ -5531,17 +5532,17 @@ NumberofLetters:
 word2:
 .db 'R','A','M'
 .db 'H','A','N','U','M','A','N'
-.db 'P','E','A','C','E'
+.db 'M','O','N','S','T','E','R'
 .db 'A','R','M','Y'
 .db 'W','A','L','K'
 .db 'D','A','R','K'
 .db 'B','R','I','G','H','T'
 .db 'W','I','N','S'
-.db 'M','O','N','S','T','E','R'
+.db 'P','E','A','C','E'
 .db 'R','A','I','N'
 
 NumberofLetters1:
-.db  $03, $07, $05, $04, $04, $04,$06, $04, $07, $04
+.db  $03, $07, $07, $04, $04, $04,$06, $04, $05, $04
 
 ;;;; Rock libraries
 ;    --------------------------------------------------------------------------------------------
@@ -5613,7 +5614,7 @@ word_snow2:
 .db 'O','V','E','R'
 
 NumberofLetters1_snow2:
-.db  $03, $05, $06, $04, $05, $03,$04, $03, $05, $04, $04, $05 ,$06, $04, $04
+.db  $03, $05, $06, $05, $05, $03,$04, $03, $05, $04, $04, $05 ,$06, $04, $04
 ;    ---------------------------------------------------------------------------------
 hanuman_sprites:
 .db $A0, $00, $01, $10 ;0
@@ -5788,11 +5789,17 @@ palette_snow_typing:
 
 .byte $0F,$11,$01,$30,   $0F,$11,$01,$30,   $0F,$11,$01,$30,  $0F,$11,$01,$30
 
-.byte $0f,$20,$10,$00,   $0f,$06,$27,$30,   $0f,$28,$0f,$3d,  $0f,$20,$10,$00
+.byte $0f,$28,$30,$05,   $0f,$06,$27,$30,   $0f,$28,$0f,$3d,  $0f,$07,$0a,$0f
 
 palette_snake_typing:
 
 .byte $08,$21,$0f,$30,   $08,$19,$3A,$0A,   $08,$3d,$0f,$28,  $08,$1C,$2C,$3C
 
 .byte $08,$20,$10,$00,   $08,$06,$27,$30,   $08,$28,$0f,$3d,  $08,$20,$10,$00
+
+palette_snow_typing_end:
+
+.byte $0F,$11,$01,$30,   $0F,$11,$01,$30,   $0F,$28,$30,$05,  $0F,$07,$0A,$0F
+
+.byte $0f,$20,$10,$00,   $0f,$06,$27,$30,   $0f,$28,$0f,$3d,  $0f,$20,$10,$00
 

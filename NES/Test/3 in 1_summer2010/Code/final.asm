@@ -437,6 +437,12 @@ varch8 =$2e
 typ_variable = $2f
 game_no1 = $209
 end_seq = $96
+inc_hanu = $5b
+dec_hanu = $5c
+count_end = $5d
+timer_end = $5e
+tt2 = $5f
+tt1 = $1a
 
 
 ;       ----------------------------------------------------
@@ -6705,7 +6711,7 @@ typ_end_seq:
               LDA #$10
               JSR setCHRPage0000
 
-              LDA #$0b
+              LDA #$13
               JSR setCHRPage1000
 
 
@@ -6725,6 +6731,7 @@ typ_end_seq:
               sta game_no
               
               jsr ClearSprites12
+              jsr LoadSprites98
 
 @ppp:       rts
 
@@ -7029,19 +7036,23 @@ ending_seq:
               ;lda level_change
               ;cmp #4
               ;bne universal
-               
+
               jsr typ_end_seq
               jsr loading_letters_end
-
+              jsr typ_end_loading_underlines 
+              jsr typ_end_clearing_underlines
+              jsr typ_end_Compare
+              JSR update_spritespp
+              jsr increase_hanuman
+              jsr decrease_hanuman
+              jsr timer_end_typing
               jsr ResetKeyboard_end
               jsr ReadKeyboard_end
               jsr ParseKeyboard_end
 
 
-              jsr typ_end_loading_underlines
-              jsr typ_end_clearing_underlines
-              jsr typ_end_Compare
-              JSR update_spritespp
+
+
 
               jmp ennd
         ;     ----------------------------------------------------------

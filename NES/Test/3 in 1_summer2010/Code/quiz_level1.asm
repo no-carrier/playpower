@@ -172,7 +172,7 @@ lda #0
         lda #%10001000
         sta $2000
         
-        jsr ClearSprites11
+        ;jsr ClearSprites11
 
         ldx #0
 
@@ -183,7 +183,7 @@ lda #0
         cmp #4
         bne @back1
 
-        jsr ClearSprites11
+        ;jsr ClearSprites11
         jsr update_sprites11
 
         lda #10
