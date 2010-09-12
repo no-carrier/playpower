@@ -1,7 +1,7 @@
 controller_test_malaria:
 
         lda mosquito_dead
-        cmp #5
+        cmp #15
         bpl @oh
         jmp @dsp
 
@@ -294,24 +294,26 @@ frame5:   lda #$06
 
         lda tri
         cmp #1
-        bne @gg2
-
+        bne amjj
+         lda #1
+         sta pressA
         LDA rm1
         CMP #10
-        BEQ @lv2
+        BEQ lv22
         inc rm1
         jsr frame1
 
-        rts
+  amjj:  rts
 
 
 
 
-   @lv2:lda #0
-       sta rm1
-       sta tri
+   lv22:
+        lda #0
+        sta rm1
+        sta tri
 
-          lda #$04
+           lda #$04
            sta $515
            lda #$01
            sta $519
@@ -320,13 +322,17 @@ frame5:   lda #$06
            lda #$11
            sta $521
 
-           lda #1
+      ;     lda key1
+      ;     cmp #1
+      ;     bne @gg2
+           lda #0
            sta pressA
+         ;  sta tt2
+
+           RTS
 
 
-
-  @gg2:     RTS
-  
+ 
   
   random_gen_mal:
         ldx #10          ; generate 4 bytes
@@ -1053,8 +1059,8 @@ load_g5:
              inc mosY
              inc mosY
              inc mosY
-             inc mosY
-             inc mosY
+          ;   inc mosY
+          ;   inc mosY
 
              lda #1
              sta jj
@@ -1071,8 +1077,8 @@ load_g5:
              inc mosY
              inc mosY
              inc mosY
-             inc mosY
-             inc mosY
+           ;  inc mosY
+           ;  inc mosY
 
              lda #2
              sta jj
@@ -1089,8 +1095,8 @@ load_g5:
              inc mosY
              inc mosY
              inc mosY
-             inc mosY
-             inc mosY
+          ;   inc mosY
+          ;   inc mosY
 
              lda #3
              sta jj
@@ -1107,8 +1113,8 @@ load_g5:
              inc mosY
              inc mosY
              inc mosY
-             inc mosY
-             inc mosY
+          ;   inc mosY
+          ;   inc mosY
 
              lda #4
              sta jj
@@ -1125,8 +1131,8 @@ load_g5:
              inc mosY
              inc mosY
              inc mosY
-             inc mosY
-             inc mosY
+          ;   inc mosY
+          ;   inc mosY
 
              lda #5
              sta jj
@@ -1245,64 +1251,61 @@ load_g5:
       cmp #1
       bne ff1
       lda #1
-
+      cmp pressA
+      bne ank1
+      lda #1
       sta key1
-   ;   lda #0
-   ;   sta key2
-   ;   sta key3
-   ;   sta key4
-   ;   sta key5
 
 
-      rts
+ank1 : rts
+
 ff1:lda jj
     cmp #2
     bne ff2
     lda #1
+      cmp pressA
+      bne ank1
+    lda #1
     sta key2
-  ;   lda #0
-  ;    sta key1
-  ;    sta key3
-  ;    sta key4
-  ;    sta key5
+
     rts
 ff2:lda jj
     cmp #3
     bne ff3
     lda #1
+      cmp pressA
+      bne ank2
+    lda #1
 
     sta key3
- ;    lda #0
- ;     sta key1
- ;     sta key2
- ;     sta key4
- ;     sta key5
-    rts
+
+ank2:    rts
 ff3:lda jj
     cmp #4
     bne ff4
     lda #1
+    cmp pressA
+     bne ank2
+    lda #1
 
     sta key4
- ;    lda #0
- ;     sta key1
- ;     sta key2
- ;     sta key3
- ;     sta key5
+
+
     rts
 ff4:lda jj
     cmp #5
     bne ff5
     lda #1
+      cmp pressA
+      bne ff5
+    lda #1
 
     sta key5
-  ;   lda #0
-  ;    sta key1
-  ;    sta key2
-  ;    sta key3
-  ;    sta key4
+   
 
 ff5:rts
+
+
 compare_mal:
          lda $514
          sta racY
@@ -1587,6 +1590,30 @@ khm22:  dec racY
 khm23:rts
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+timer1:
+
+      lda tt2
+      cmp #1
+      bne bkg11
+
+
+         INC tt1
+         lda tt1
+         CMP #20  ; 20 is the delay, increaseincreme/decrease to make it hit faster
+         BNE bkg11
+         LDA #$00
+         STA tt1
+
+         lda #0
+         sta pressA
+
+bkg11 :  rts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ultimate:
       lda key1
       cmp #1
@@ -1836,7 +1863,7 @@ disable1:  inc mosquito_dead
        
        lda #$00
        sta $502
-       lda #$04
+       lda #$00
        sta $501
        rts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1859,7 +1886,7 @@ disable2:inc mosquito_dead
        inc md2
        lda #$00
        sta $506
-       lda #$04
+       lda #$00
        sta $505
        rts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1882,7 +1909,7 @@ disable3: inc mosquito_dead
        inc md3
        lda #$00
        sta $50A
-       lda #$04
+       lda #$00
        sta $509
        rts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1905,7 +1932,7 @@ disable4: inc mosquito_dead
        inc md4
        lda #$00
        sta $50E
-       lda #$04
+       lda #$00
        sta $50D
        rts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1928,7 +1955,7 @@ disable5: inc mosquito_dead
        inc md5
        lda #$00
        sta $512
-       lda #$04
+       lda #$00
        sta $511
        rts
 
