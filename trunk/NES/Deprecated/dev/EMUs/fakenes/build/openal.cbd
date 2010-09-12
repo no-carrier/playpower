@@ -1,0 +1,29 @@
+setstdout "${STDOUT_LOG}"
+setstderr "${STDERR_LOG}"
+
+@!call "${CC}" -E "${BUILD_DIR}/openal.c ${CPPFLAGS}"
+
+do ifnret 0
+   setstdout ''
+   setstderr ''
+
+   echo 'you\'re missing OpenAL'
+   echo 'continuing on without it...'
+
+   uninvoke 0
+done
+
+setstdout ''
+setstderr ''
+
+# --
+
+CFLAGS += ' -DUSE_OPENAL'
+
+# --
+
+do ifplat unix
+   LDFLAGS += ' `openal-config --libs`'
+else
+   LDFLAGS += ' -lOpenAL32'
+done

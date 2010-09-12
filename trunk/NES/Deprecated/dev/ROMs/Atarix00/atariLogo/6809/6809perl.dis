@@ -1,0 +1,563 @@
+#!/usr/local/bin/perl
+#  This is an 6809 microP disassembler
+#  It is a PERL script file thus making it easy to modify
+#  It is quite fast enough for the small memory space of 6809
+#  Author:  Jason Barkdull
+#       jnichola@cadesm0.eng.utah.edu
+#  Please mail me or post any bugs
+#  Thanks:
+#	musjndx@gsusgi2.gsu.edu (Jonathan N. Deitch)
+#
+#  September 29, 1994
+#  Please distribute this script freely
+
+
+# Use the file they specified, if specified
+
+open(STDIN,$ARGV[0]) || die "Can't open $ARGV[0]: $!\n"
+    if $ARGV[0];
+
+@format1 = (
+    " %2.2X             ",
+    " %2.2X %2.2X          ",
+    " %2.2X %2.2X %2.2X       ",
+    " %2.2X %2.2X %2.2X %2.2X    ",
+    " %2.2X %2.2X %2.2X %2.2X %2.2X ",
+);
+
+# init the array of OpCodes
+
+#opcodes starting with 10 & 11
+%map2 = (
+	0x113f,	"SWI3 op_only",
+	0x1183,	"CMPU data16",
+	0x118c,	"CMPS data16",
+	0x1193,	"CMPU addr8",
+	0x119c,	"CMPS addr8",
+	0x11a3,	"CMPU pp",
+	0x11ac,	"CMPS pp",
+	0x11b3,	"CMPU addr16",
+	0x11bc,	"CMPS addr16",
+
+
+	0x1021,	"LBRN rel16",
+	0x1022,	"LBHI rel16",
+	0x1023,	"LBLS rel16",
+	0x1024,	"LBHS rel16",
+	0x1025,	"LBLO rel16",
+	0x1026,	"LBNE rel16",
+	0x1027,	"LBEQ rel16",
+	0x1028,	"LBVC rel16",
+	0x1029,	"LBVS rel16",
+	0x102a,	"LBPL rel16",
+	0x102b,	"LBMI rel16",
+	0x102c,	"LBGE rel16",
+	0x102d,	"LBLT rel16",
+	0x102e,	"LBGT rel16",
+	0x102f,	"LBLE rel16",
+
+	0x103f,	"SWI2 op_only",
+
+	0x1083,	"CMPD data16",
+	0x108c,	"CMPY data16",
+	0x108e,	"LDY data16",
+
+	0x1093,	"CMPD addr8",
+	0x109c,	"CMPY addr8",
+	0x109e,	"LDY addr8",
+	0x109f,	"STY addr8",
+
+	0x10a3,	"CMPD pp",
+	0x10ac,	"CMPY pp",
+	0x10ae,	"LDY pp",
+	0x10af,	"STY pp",
+	0x10b3,	"CMPD addr16",
+	0x10bc,	"CMPY addr16",
+	0x10be,	"LDY addr16",
+	0x10bf,	"STY addr16",
+
+	0x10ce,	"LDS data16 ",
+	0x10de,	"LDS addr8",
+	0x10df,	"STS addr8",
+	0x10ee,	"LDS pp",
+	0x10ef,	"STS pp",
+	0x10fe,	"LDS addr16",
+	0x10ff,	"STS addr16"
+);
+
+@map = (
+	"NEG addr8",
+	"\0 not",
+	"\0 not",
+	"COM addr8",
+	"LSR addr8",
+	"\0 not",
+	"ROR addr8",
+	"ASR addr8",
+	"ASL addr8",
+	"ROL addr8",
+	"DEC addr8",
+	"\0 not",
+	"INC addr8",
+	"TST addr8",
+	"JMP addr8",
+	"CLR addr8",
+	"10 ten_eleven",           # 10
+	"11 ten_eleven",           # 11
+	"NOP op_only",
+	"SYNC op_only",
+	"\0 not",
+	"\0 not",
+	"LBRA rel16",
+	"LBSR rel16",
+	"\0 not",
+	"DAA op_only",
+	"ORCC data8",
+	"\0 not",
+	"ANDCC data8",
+	"SEX op_only",
+	"EXG r2",	#EXG & TFR; irel8ed tells which registers
+	"TFR r2",
+	"BRA rel8",
+	"BRN rel8",
+	"BHI rel8",
+	"BLS rel8",
+	"BCC rel8",
+	"BCS rel8",
+	"BNE rel8",
+	"BEQ rel8",
+	"BVC rel8",
+	"BVS rel8",
+	"BPL rel8",
+	"BMI rel8",
+	"BGE rel8",
+	"BLT rel8",
+	"BGT rel8",
+	"BLE rel8",
+	"LEAX pp",
+	"LEAY pp",
+	"LEAS pp",
+	"LEAU pp",
+	"PSHS rr",
+	"PULS rr",
+	"PSHU rr",
+	"PULU rr",
+	"\0 not",
+	"RTS op_only",
+	"ABX op_only",
+	"RTI op_only",
+	"CWAI data8",
+	"MUL op_only",
+	"\0 not",
+	"SWI op_only",
+	"NEGA op_only",
+	"\0 not",
+	"\0 not",
+	"COMA op_only",
+	"LSRA op_only",
+	"\0 not",
+	"RORA op_only",
+	"ASRA op_only",
+	"SLA op_only",
+	"ROLA op_only",
+	"DECA op_only",
+	"\0 not",
+	"INCA op_only",
+	"TSTA op_only",
+	"\0 not",
+	"CLRA op_only",
+	"NEGB op_only",
+	"\0 not",
+	"\0 not",
+	"COMB op_only",
+	"LSRB op_only",
+	"\0 not",
+	"RORB op_only",
+	"ASRB op_only",
+	"SLB op_only",
+	"ROLB op_only",
+	"DECB op_only",
+	"\0 not",
+	"INCB op_only",
+	"TSTB op_only",
+	"\0 not",
+	"CLRB op_only",
+	"NEG pp",
+	"\0 not",
+	"\0 not",
+	"COM pp",
+	"LSR pp",
+	"\0 not",
+	"ROR pp",
+	"ASR pp",
+	"SL pp",
+	"ROL pp",
+	"DEC pp",
+	"\0 not",
+	"INC pp",
+	"TST pp",
+	"JMP pp",
+	"CLR pp",
+	"NEG addr16",
+	"\0 not",
+	"\0 not",
+	"COM addr16",
+	"LSR addr16",
+	"\0 not",
+	"ROR addr16",
+	"ASR addr16",
+	"SL addr16",
+	"ROL addr16",
+	"DEC addr16",
+	"\0 not",
+	"INC addr16",
+	"TST addr16",
+	"JMP addr16",
+	"CLR addr16",
+	"SUBA data8",
+	"CMPA data8",
+	"SBCA data8",
+	"SUBD data16",
+	"ANDA data8",
+	"BITA data8",
+	"LDA data8",
+	"\0 not",
+	"EORA data8",
+	"ADCA data8",
+	"ORA data8",
+	"ADDA data8",
+	"CMPX data16",
+	"BSR rel8",
+	"LDX data16",
+	"\0 not",
+	"SUBA addr8",
+	"CMPA addr8",
+	"SBCA addr8",
+	"SUBD addr8",
+	"ANDA addr8",
+	"BITA addr8",
+	"LDA addr8",
+	"STA addr8",
+	"EORA addr8",
+	"ADCA addr8",
+	"ORA addr8",
+	"ADDA addr8",
+	"CMPX addr8",
+	"JSR addr8",
+	"LDX addr8",
+	"STX addr8",
+	"SUBA pp",
+	"CMPA pp",
+	"SBCA pp",
+	"SUBD pp",
+	"ANDA pp",
+	"BITA pp",
+	"LDA pp",
+	"STA pp",
+	"EORA pp",
+	"ADCA pp",
+	"ORA pp",
+	"ADDA pp",
+	"CMPX pp",
+	"JSR pp",
+	"LDX pp",
+	"STX pp",
+	"SUBA addr16",
+	"CMPA addr16",
+	"SBCA addr16",
+	"SUBD addr16",
+	"ANDA addr16",
+	"BITA addr16",
+	"LDA addr16",
+	"STA addr16",
+	"EORA addr16",
+	"ADCA addr16",
+	"ORA addr16",
+	"ADDA addr16",
+	"CMPX addr16",
+	"JSR addr16",
+	"LDX addr16",
+	"STX addr16",
+	"SUBB data8",
+	"CMPB data8",
+	"SBCB data8",
+	"ADDD data16",
+	"ANDB data8",
+	"BITB data8",
+	"LDB data8",
+	"\0 not",
+	"EORB data8",
+	"ADCB data8",
+	"ORB data8",
+	"ADDB data8",
+	"LDD data16",
+	"\0 not",
+	"LDU data16",
+	"\0 not",
+	"SUBB addr8",
+	"CMPB addr8",
+	"SBCB addr8",
+	"ADDD addr8",
+	"ANDB addr8",
+	"BITB addr8",
+	"LDB addr8",
+	"STB addr8",
+	"EORB addr8",
+	"ADCB addr8",
+	"ORB addr8",
+	"ADDB addr8",
+	"LDD addr8",
+	"STD addr8",
+	"LDU addr8",
+	"STU addr8",
+	"SUBB pp",
+	"CMPB pp",
+	"SBCB pp",
+	"ADDD pp",
+	"ANDB pp",
+	"BITB pp",
+	"LDB pp",
+	"STB pp",
+	"EORB pp",
+	"ADCB pp",
+	"ORB pp",
+	"ADDB pp",
+	"LDD pp",
+	"STD pp",
+	"LDU pp",
+	"STU pp",
+	"SUBB addr16",
+	"CMPB addr16",
+	"SBCB addr16",
+	"ADDD addr16",
+	"ANDB addr16",
+	"BITB addr16",
+	"LDB addr16",
+	"STB addr16",
+	"EORB addr16",
+	"ADCB addr16",
+	"ORB addr16",
+	"ADDB addr16",
+	"LDD addr16",
+	"STD addr16",
+	"LDU addr16",
+	"STU addr16",
+);
+
+$offset = 0x0000;
+##### subroutines  ########
+sub not {
+     $hex = 0;
+     "";
+}
+sub get_byte {
+     $hex_buf[++$hex];
+}
+sub op_only {
+     sprintf("%5s", $inst[0]);
+}
+
+sub rr {
+     local (@reg);
+     local ($data) = &get_byte;
+     if ($data & 0x80) { push(@reg,"PC");}
+     if ($data & 0x40) {
+         push(@reg, ($hex_buf[0]) & 0x02 ? "S" : "U" );
+     }
+     if ($data & 0x20) { push(@reg,"Y");}
+     if ($data & 0x10) { push(@reg,"X");}
+     if ($data & 0x08) { push(@reg,"DP");}
+     if ($data & 0x04) { push(@reg,"B");}
+     if ($data & 0x02) { push(@reg,"A");}
+     if ($data & 0x01) { push(@reg,"CC");}
+     if ($hex_buf[0] & 0x01) { @reg = reverse(@reg);}
+     sprintf("%5s %s", $inst[0], join(",",@reg) );
+}
+
+#reg_stack = (PC,US,Y,X,DP,B,A,CC);
+@reg_switch = (D,X,Y,U,S,PC,"\0","\0",A,B,CC,DP);
+
+sub r2 {
+     local ($data) = &get_byte;
+     local ($reg1, $reg2) = ($reg_switch[$data/16],
+			     $reg_switch[$data%16]);
+     if ((!defined($reg1)) |
+	 (!defined($reg2)) |
+	 ($reg2 eq "\0")   |
+	 ($reg1 eq "\0")     )  {
+	     &not;
+     }
+     else {
+          sprintf("%5s %s,%s", $inst[0], $reg1, $reg2);
+     }
+}
+sub addr16 {
+     local ($hh,$ll) = (&get_byte, &get_byte);
+     sprintf("%5s \$%4.4X", $inst[0], $hh*256+$ll);
+}
+sub addr8 {
+     sprintf("%5s \$%2.2X,DP", $inst[0], &get_byte);
+}
+sub data16 {
+     local ($hh,$ll) = (&get_byte, &get_byte);
+     sprintf("%5s #\$%4.4X", $inst[0], $hh*256+$ll);
+}
+sub data8 {
+     sprintf("%5s #\$%2.2X", $inst[0], &get_byte);
+}
+sub sign_x {
+     local ($sign, $num) = @_;
+     $num &= $sign | ($sign-1) ;
+     ($num > ($sign-1) ) ? ($num & ($sign-1)) - $sign : $num;
+}
+sub rel16 {
+     local ($hh,$ll) = (&get_byte, &get_byte);
+     local($rel) = ($hh*256 + $ll + $offset + $hex+1) % 0x10000;
+     sprintf("%5s \$%4.4X", $inst[0], $rel);
+}
+sub rel8 {
+     local($bb) = &sign_x(0x80,&get_byte);
+#printf("here %4.4X\n",$bb);
+     local($rel) = ($bb + $offset + $hex+1) % 0x10000;
+#printf("here %4.4X\n",$rel);
+     sprintf("%5s \$%4.4X", $inst[0], $rel);
+}
+sub ten_eleven {
+     local($temp) = $map2{$hex_buf[0]*256+&get_byte};
+     if (defined($temp)) {
+         @inst = split(" ",$temp);
+	 $temp = $inst[1];
+	 &$temp;
+     }
+     else {
+         &not;
+     }
+}
+#post byte, ie: indexed and indirect adata8ressings
+@index = ( X, Y, U, S);
+
+sub pp {
+     local($hh, $ll);
+     local($post_b) = &get_byte;
+     local($idx) = $index[ ($post_b / 0x20) & 0x03];
+     if ($post_b < 0x80) {
+	 sprintf("%5s %s,%s", $inst[0], &sign_x(0x10,$post_b), $idx);
+     } else {
+	 $post_b &= 0x10;
+         if ($post_b == 0x00) {
+	      sprintf("%5s ,%s+", $inst[0], $idx); }
+         elsif ($post_b == 0x01) {
+	      sprintf("%5s ,%s++", $inst[0], $idx); }
+         elsif ($post_b == 0x02) {
+	      sprintf("%5s ,-%s", $inst[0], $idx); }
+         elsif ($post_b == 0x03) {
+	      sprintf("%5s ,--%s", $inst[0], $idx); }
+         elsif ($post_b == 0x04) {
+	      sprintf("%5s ,%s", $inst[0], $idx); }
+         elsif ($post_b == 0x05) {
+	      sprintf("%5s B,%s", $inst[0], $idx); }
+         elsif ($post_b == 0x06) {
+	      sprintf("%5s A,%s", $inst[0], $idx); }
+         elsif ($post_b == 0x08) {
+#printf( "here\n");
+	      sprintf("%5s %s\$%2.2X,%s", $inst[0],
+		       &signed_hex(&get_byte), $idx); }
+         elsif ($post_b == 0x09) {
+	      $hh = &get_byte;
+	      $ll = &get_byte;
+	      sprintf("%5s \$%2.2X%2.2X,%s", $inst[0], $hh, $ll, $idx); }
+         elsif ($post_b == 0x0B) {
+	      sprintf("%5s D,%s", $inst[0], $idx); }
+         elsif ($post_b == 0x0C) {
+	      sprintf("%5s \$%2.2X,PC", $inst[0], &get_byte); }
+         elsif ($post_b == 0x0D) {
+	      $hh = &get_byte;
+	      $ll = &get_byte;
+	      sprintf("%5s \$%2.2X%2.2X,PC", $inst[0], $hh, $ll); }
+         elsif ($post_b == 0x11) {
+	      sprintf("%5s [,%s++]", $inst[0], $idx); }
+         elsif ($post_b == 0x13) {
+	      sprintf("%5s [,--%s]", $inst[0], $idx); }
+         elsif ($post_b == 0x14) {
+	      sprintf("%5s [,%s]", $inst[0], $idx); }
+         elsif ($post_b == 0x15) {
+	      sprintf("%5s [B,%s]", $inst[0], $idx); }
+         elsif ($post_b == 0x16) {
+	      sprintf("%5s [A,%s]", $inst[0], $idx); }
+         elsif ($post_b == 0x18) {
+	      sprintf("%5s [\$%2.2X,%s]", $inst[0], &get_byte, $idx); }
+         elsif ($post_b == 0x19) {
+	      $hh = &get_byte;
+	      $ll = &get_byte;
+	      sprintf("%5s [\$%2.2X%2.2X,%s]", $inst[0], $hh, $ll, $idx); }
+         elsif ($post_b == 0x1B) {
+	      sprintf("%5s [D,%s]", $inst[0], $idx); }
+         elsif ($post_b == 0x1C) {
+	      sprintf("%5s [\$%2.2X,PC]", $inst[0], &get_byte ); }
+         elsif ($post_b == 0x1D) {
+	      $hh = &get_byte;
+	      $ll = &get_byte;
+	      sprintf("%5s [\$%2.2X%2.2X,PC]", $inst[0], $hh, $ll ); }
+         elsif ($post_b == 0x1F) {
+	      $hh = &get_byte;
+	      $ll = &get_byte;
+	      sprintf("%5s [\$%2.2X%2.2X]", $inst[0], $hh, $ll ); }
+         else { &not; }
+     }
+}
+sub signed_hex {
+     local($hex) = $_[0];
+#print "here\n";
+     $hex<0 ? ("-",-$hex) : ("+",$hex);
+}
+sub fill_buf {
+     local ($temp) = getc(STDIN);
+     exit
+	if (!defined($temp));
+     $more = 5 - ($#hex_buf + 2);
+     read(STDIN,$data,$more);
+     push(@hex_buf, unpack("C*",$temp . $data) );
+}
+sub char_pack {
+     local (@hex) = @_;
+     local ($string);
+     foreach $ttt (@hex) {
+	 $ttt &= 0x7f;
+	 if ($ttt < 0x20) {
+	     $string .= " ";		#"\\$nonvisible[$ttt]\\";
+	 } elsif ($ttt == 0x7f) {
+	     $string .= " ";		#"\\DEL\\";
+#	 } elsif ($ttt == 0x5c) {
+#	     $string .= "\\\\";
+	 } else {
+	     $string .= pack("C1",$ttt);
+         }
+     } $string;
+}
+@nonvisible = (  #note that DEL is at 7f, ie it isn't in the array
+       NUL, SOH, STX, ETX,
+       EOT, ENQ, ACK, BEL,
+       BS, HT, LF, VT,
+       FF, CR, S0, SI,
+       DLE, DC1, DC2, DC3,
+       DC4, NAK, SYN, ETB,
+       CAN, EM, SUB, ESC,
+       FS, GS, RS, US
+);
+# @inst -- instruction template for dis-assembler
+# $mn_inst -- mnemonic form of the instruction
+
+while ()
+{
+    &fill_buf;
+#printf("%2.2X %2.2X %2.2X %2.2X %2.2X\n", @hex_buf);
+    $hex = 0;
+    @inst = split(" ", $map[$hex_buf[0]]);
+#print @inst,"\n";
+    $mn_inst = $inst[1];
+    $text = &$mn_inst;
+    @inst_bytes = splice(@hex_buf,0,$hex+1);
+    printf(("%4.4X " . $format1[$hex] . " %-15s   \'%s\'\n"),
+	   $offset, @inst_bytes, $text, &char_pack(@inst_bytes));
+    $offset += $hex+1;
+}
