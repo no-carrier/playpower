@@ -1,0 +1,6 @@
+Please put the following lines in the complier: 
+
+asm6 final test.bin
+copy /b test.bin+start.chr+hanuman_quiz_game.chr sprite.nes
+del test.bin
+pause
